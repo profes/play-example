@@ -1,10 +1,15 @@
 package infrastructure;
 
+import akka.actor.Actor;
+import akka.actor.ActorRef;
+import akka.actor.Props;
+import akka.actor.UntypedActorFactory;
 import com.google.inject.name.Named;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import play.Logger;
+import play.libs.Akka;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -15,9 +20,9 @@ import static play.Logger.debug;
 @Singleton
 public class RabbitQueue implements Queue {
 
+    public static final String CONSUMER_TAG = "consumer";
     private final String host;
     private final String queue;
-
     private Channel channel;
     private Connection connection;
 
@@ -34,6 +39,15 @@ public class RabbitQueue implements Queue {
             connection = getConnection();
             channel = connection.createChannel();
             channel.queueDeclare(queue, false, false, false, null);
+
+            ActorRef actorRef = Akka.system().actorOf(new Props(new UntypedActorFactory() {
+                @Override
+                public Actor create() throws Exception {
+                    return new MongoWriter();
+                }
+            }));
+
+            channel.basicConsume(queue, false, CONSUMER_TAG, new Consumer(channel, actorRef));
         } catch (IOException e) {
             Logger.error("failed connecting to rabbitmq", e);
         }
@@ -48,6 +62,8 @@ public class RabbitQueue implements Queue {
     public void stop() {
         try {
             debug("Stopping rabbitmq connection");
+
+            channel.basicCancel(CONSUMER_TAG);
 
             channel.close();
             connection.close();
