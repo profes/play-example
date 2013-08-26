@@ -13,7 +13,8 @@ object ApplicationBuild extends Build {
     javaJdbc,
     javaEbean,
     "com.rabbitmq" % "amqp-client" % "3.1.4",
-    "com.google.inject" % "guice" % "3.0"
+    "com.google.inject" % "guice" % "3.0",
+    "com.google.guava" % "guava" % "14.0.1"
   )
 
   val main = play.Project(appName, appVersion, appDependencies).settings(

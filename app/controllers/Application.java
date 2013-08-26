@@ -2,13 +2,14 @@ package controllers;
 
 import infrastructure.Sender;
 import org.codehaus.jackson.JsonNode;
-import play.Logger;
 import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+
+import static play.Logger.debug;
 
 @Singleton
 public class Application extends Controller {
@@ -24,7 +25,7 @@ public class Application extends Controller {
     public Result send() {
         JsonNode json = request().body().asJson();
 
-        Logger.debug("Got JSON: " + json);
+        debug("Got JSON: " + json);
 
         if (json == null) {
             return badRequest("Expecting Json data");
