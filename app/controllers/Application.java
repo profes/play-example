@@ -30,13 +30,8 @@ public class Application extends Controller {
         if (json == null) {
             return badRequest("Expecting Json data");
         } else {
-            String message = json.findPath("message").getTextValue();
-            if (message == null) {
-                return badRequest("Missing parameter [message]");
-            } else {
-                sender.send(message);
-                return ok("Hello " + message);
-            }
+            sender.send(json.toString());
+            return ok("Hello " + json);
         }
     }
 }
