@@ -1,8 +1,15 @@
+import akka.actor.ActorRef;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-import infrastructure.Queue;
-import infrastructure.RabbitQueue;
+import com.google.inject.TypeLiteral;
+import com.lambdaworks.redis.RedisConnection;
+import infrastructure.rabbitmq.Queue;
+import infrastructure.rabbitmq.RabbitQueue;
+import infrastructure.redis.Redis;
+import infrastructure.redis.RedisActorProvider;
+import infrastructure.redis.RedisImpl;
+import infrastructure.redis.RedisProvider;
 import play.Application;
 import play.GlobalSettings;
 
@@ -12,6 +19,10 @@ import static com.typesafe.config.ConfigFactory.load;
 public class Global extends GlobalSettings {
 
     private static final Injector INJECTOR = createInjector();
+
+    private static Injector createInjector() {
+        return Guice.createInjector(new GuiceModule());
+    }
 
     @Override
     public void onStart(Application app) {
@@ -30,15 +41,20 @@ public class Global extends GlobalSettings {
         return INJECTOR.getInstance(controllerClass);
     }
 
-    private static Injector createInjector() {
-        return Guice.createInjector(new AbstractModule() {
-            @Override
-            protected void configure() {
-                bind(String.class).annotatedWith(named("rabbitmq.host")).toInstance(load().getString("rabbitmq.host"));
-                bind(String.class).annotatedWith(named("rabbitmq.queue")).toInstance(load().getString("rabbitmq.queue"));
+    private static class GuiceModule extends AbstractModule {
+        @Override
+        protected void configure() {
+            bind(String.class).annotatedWith(named("rabbitmq.host")).toInstance(load().getString("rabbitmq.host"));
+            bind(String.class).annotatedWith(named("rabbitmq.queue")).toInstance(load().getString("rabbitmq.queue"));
 
-                bind(Queue.class).to(RabbitQueue.class);
-            }
-        });
+            bind(Queue.class).to(RabbitQueue.class);
+
+            bind(String.class).annotatedWith(named("redis.host")).toInstance(load().getString("redis.host"));
+            bind(new TypeLiteral<RedisConnection<String, String>>() {
+            }).toProvider(RedisProvider.class);
+            bind(Redis.class).to(RedisImpl.class);
+
+            bind(ActorRef.class).annotatedWith(named("redis.actor")).toProvider(RedisActorProvider.class);
+        }
     }
 }

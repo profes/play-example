@@ -9,6 +9,8 @@ import play.Logger;
 
 import java.io.IOException;
 
+import static play.Logger.debug;
+
 public class Consumer extends DefaultConsumer {
     private final ActorRef actor;
     private final Channel channel;
@@ -23,7 +25,7 @@ public class Consumer extends DefaultConsumer {
     public void handleDelivery(String consumerTag, Envelope envelope, BasicProperties properties, byte[] body) throws IOException {
         final String bodyText = new String(body);
 
-        Logger.debug("Received message: " + bodyText);
+        debug("Received message: " + bodyText);
         actor.tell(bodyText, null);
         channel.basicAck(envelope.getDeliveryTag(), false);
     }

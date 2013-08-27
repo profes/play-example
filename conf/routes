@@ -5,6 +5,7 @@
 # Home page
 GET     /                           @controllers.Application.index()
 POST    /send                       @controllers.Application.send()
+GET     /messages                   @controllers.Application.messages()
 
 
 # Map static resources from the /public folder to the /assets URL path

@@ -1,5 +1,6 @@
 package infrastructure;
 
+import infrastructure.rabbitmq.Queue;
 import play.Logger;
 
 import javax.inject.Inject;

@@ -1,15 +1,13 @@
-package infrastructure;
+package infrastructure.rabbitmq;
 
-import akka.actor.Actor;
 import akka.actor.ActorRef;
-import akka.actor.Props;
-import akka.actor.UntypedActorFactory;
 import com.google.inject.name.Named;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
+import infrastructure.Consumer;
+import infrastructure.rabbitmq.Queue;
 import play.Logger;
-import play.libs.Akka;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -23,13 +21,15 @@ public class RabbitQueue implements Queue {
     public static final String CONSUMER_TAG = "consumer";
     private final String host;
     private final String queue;
+    private final ActorRef actor;
     private Channel channel;
     private Connection connection;
 
     @Inject
-    public RabbitQueue(@Named("rabbitmq.host") String host, @Named("rabbitmq.queue") String queue) {
+    public RabbitQueue(@Named("rabbitmq.host") String host, @Named("rabbitmq.queue") String queue, @Named("redis.actor") ActorRef actor) {
         this.host = host;
         this.queue = queue;
+        this.actor = actor;
     }
 
     public void start() {
@@ -40,14 +40,7 @@ public class RabbitQueue implements Queue {
             channel = connection.createChannel();
             channel.queueDeclare(queue, false, false, false, null);
 
-            ActorRef actorRef = Akka.system().actorOf(new Props(new UntypedActorFactory() {
-                @Override
-                public Actor create() throws Exception {
-                    return new MongoWriter();
-                }
-            }));
-
-            channel.basicConsume(queue, false, CONSUMER_TAG, new Consumer(channel, actorRef));
+            channel.basicConsume(queue, false, CONSUMER_TAG, new Consumer(channel, actor));
         } catch (IOException e) {
             Logger.error("failed connecting to rabbitmq", e);
         }

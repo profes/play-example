@@ -1,4 +1,4 @@
-package infrastructure;
+package infrastructure.rabbitmq;
 
 import java.io.IOException;
 
