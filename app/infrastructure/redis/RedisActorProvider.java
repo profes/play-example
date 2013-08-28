@@ -3,17 +3,17 @@ package infrastructure.redis;
 import akka.actor.ActorRef;
 import akka.actor.Props;
 import com.google.inject.Provider;
-import infrastructure.ActorFactory;
+import infrastructure.RedisWriterActorFactory;
 import play.libs.Akka;
 
 import javax.inject.Inject;
 
 public class RedisActorProvider implements Provider<ActorRef> {
 
-    private final ActorFactory actorFactory;
+    private final RedisWriterActorFactory actorFactory;
 
     @Inject
-    public RedisActorProvider(ActorFactory actorFactory) {
+    public RedisActorProvider(RedisWriterActorFactory actorFactory) {
         this.actorFactory = actorFactory;
     }
 

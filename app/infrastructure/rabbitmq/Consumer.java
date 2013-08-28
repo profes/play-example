@@ -1,4 +1,4 @@
-package infrastructure;
+package infrastructure.rabbitmq;
 
 import com.google.inject.assistedinject.Assisted;
 import com.rabbitmq.client.AMQP.BasicProperties;

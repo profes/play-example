@@ -1,10 +1,12 @@
+import akka.actor.ActorRef;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.TypeLiteral;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
 import com.lambdaworks.redis.RedisConnection;
-import infrastructure.RabbitConsumerFactory;
+import infrastructure.MessageForwardingActorProvider;
+import infrastructure.rabbitmq.RabbitConsumerFactory;
 import infrastructure.rabbitmq.Queue;
 import infrastructure.rabbitmq.RabbitQueue;
 import infrastructure.redis.Redis;
@@ -57,6 +59,8 @@ public class Global extends GlobalSettings {
             bind(Redis.class).to(RedisImpl.class);
 
             install(new FactoryModuleBuilder().build(RabbitConsumerFactory.class));
+
+            bind(ActorRef.class).annotatedWith(named("message.actor")).toProvider(MessageForwardingActorProvider.class);
         }
     }
 }

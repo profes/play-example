@@ -4,7 +4,6 @@ import com.google.inject.name.Named;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
-import infrastructure.RabbitConsumerFactory;
 import play.Logger;
 
 import javax.inject.Inject;

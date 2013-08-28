@@ -6,12 +6,12 @@ import com.google.inject.Injector;
 
 import javax.inject.Inject;
 
-public class ActorFactory implements UntypedActorFactory {
+public class RedisWriterActorFactory implements UntypedActorFactory {
 
     private final Injector injector;
 
     @Inject
-    public ActorFactory(Injector injector) {
+    public RedisWriterActorFactory(Injector injector) {
         this.injector = injector;
     }
 
