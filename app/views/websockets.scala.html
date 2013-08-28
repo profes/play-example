@@ -1,0 +1,19 @@
+@main("WebSocket demo") {
+
+<div>Messages:
+    <ul id="socketout">
+    </ul>
+</div>
+
+<script type="text/javascript">
+    // Create a socket
+    var WS = window['MozWebSocket'] ? MozWebSocket : WebSocket
+    var socket = new WS("@routes.Application.listen().webSocketURL(request)")
+
+    // Message received on the socket
+    var receiveEvent = function(event) {
+        $('#socketout').append("<li>" + event.data + "</li>");
+    }
+    socket.onmessage = receiveEvent
+</script>
+}

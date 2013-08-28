@@ -1,13 +1,13 @@
-import akka.actor.ActorRef;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.TypeLiteral;
+import com.google.inject.assistedinject.FactoryModuleBuilder;
 import com.lambdaworks.redis.RedisConnection;
+import infrastructure.RabbitConsumerFactory;
 import infrastructure.rabbitmq.Queue;
 import infrastructure.rabbitmq.RabbitQueue;
 import infrastructure.redis.Redis;
-import infrastructure.redis.RedisActorProvider;
 import infrastructure.redis.RedisImpl;
 import infrastructure.redis.RedisProvider;
 import play.Application;
@@ -50,11 +50,13 @@ public class Global extends GlobalSettings {
             bind(Queue.class).to(RabbitQueue.class);
 
             bind(String.class).annotatedWith(named("redis.host")).toInstance(load().getString("redis.host"));
+
             bind(new TypeLiteral<RedisConnection<String, String>>() {
             }).toProvider(RedisProvider.class);
+
             bind(Redis.class).to(RedisImpl.class);
 
-            bind(ActorRef.class).annotatedWith(named("redis.actor")).toProvider(RedisActorProvider.class);
+            install(new FactoryModuleBuilder().build(RabbitConsumerFactory.class));
         }
     }
 }

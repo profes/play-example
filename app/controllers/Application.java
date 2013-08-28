@@ -1,23 +1,28 @@
 package controllers;
 
-import infrastructure.redis.Redis;
 import infrastructure.Sender;
+import infrastructure.redis.Redis;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.node.ArrayNode;
 import org.codehaus.jackson.node.ObjectNode;
+import play.Logger;
 import play.libs.Akka;
 import play.libs.F;
 import play.libs.Json;
 import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
+import play.mvc.WebSocket;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.List;
 import java.util.concurrent.Callable;
 
+import views.html.*;
+
 import static play.Logger.debug;
+
 
 @Singleton
 public class Application extends Controller {
@@ -28,7 +33,7 @@ public class Application extends Controller {
     Redis redis;
 
     public Result index() {
-        return ok(("Your new application is ready. <br /><a href='/messages'>Read messages</a>")).as("text/html");
+        return ok(index.render()).as("text/html");
     }
 
     @BodyParser.Of(BodyParser.Json.class)
@@ -79,5 +84,40 @@ public class Application extends Controller {
                     }
                 })
         );
+    }
+
+    public Result websockets() {
+        return ok(websockets.render()).as("text/html");
+    }
+
+    public WebSocket<String> listen() {
+        return new WebSocket<String>() {
+
+            // Called when the Websocket Handshake is done.
+            public void onReady(WebSocket.In<String> in, WebSocket.Out<String> out) {
+                debug("WS connected");
+
+                // For each event received on the socket,
+                in.onMessage(new F.Callback<String>() {
+                    public void invoke(String event) {
+
+                        // Log events to the console
+                        debug(event);
+                    }
+                });
+
+                // When the socket is closed.
+                in.onClose(new F.Callback0() {
+                    public void invoke() {
+
+                        // println("Disconnected");
+                        debug("disconnected");
+                    }
+                });
+
+                // Send a single 'Hello!' message
+                out.write("Hello!");
+            }
+        };
     }
 }

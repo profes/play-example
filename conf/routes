@@ -6,6 +6,8 @@
 GET     /                           @controllers.Application.index()
 POST    /send                       @controllers.Application.send()
 GET     /messages                   @controllers.Application.messages()
+GET     /websockets                 @controllers.Application.websockets()
+GET     /listen                     @controllers.Application.listen()
 
 
 # Map static resources from the /public folder to the /assets URL path

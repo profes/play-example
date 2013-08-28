@@ -1,24 +1,26 @@
 package infrastructure;
 
-import akka.actor.ActorRef;
+import com.google.inject.assistedinject.Assisted;
 import com.rabbitmq.client.AMQP.BasicProperties;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.DefaultConsumer;
 import com.rabbitmq.client.Envelope;
-import play.Logger;
+import infrastructure.redis.RedisActorProvider;
 
+import javax.inject.Inject;
 import java.io.IOException;
 
 import static play.Logger.debug;
 
 public class Consumer extends DefaultConsumer {
-    private final ActorRef actor;
     private final Channel channel;
+    private final RedisActorProvider actorProvider;
 
-    public Consumer(Channel channel, ActorRef actor) {
+    @Inject
+    public Consumer(@Assisted Channel channel, RedisActorProvider actorProvider) {
         super(channel);
         this.channel = channel;
-        this.actor = actor;
+        this.actorProvider = actorProvider;
     }
 
     @Override
@@ -26,7 +28,7 @@ public class Consumer extends DefaultConsumer {
         final String bodyText = new String(body);
 
         debug("Received message: " + bodyText);
-        actor.tell(bodyText, null);
+        actorProvider.get().tell(bodyText, null);
         channel.basicAck(envelope.getDeliveryTag(), false);
     }
 }

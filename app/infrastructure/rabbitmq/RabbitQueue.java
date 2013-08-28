@@ -1,12 +1,10 @@
 package infrastructure.rabbitmq;
 
-import akka.actor.ActorRef;
 import com.google.inject.name.Named;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
-import infrastructure.Consumer;
-import infrastructure.rabbitmq.Queue;
+import infrastructure.RabbitConsumerFactory;
 import play.Logger;
 
 import javax.inject.Inject;
@@ -21,15 +19,15 @@ public class RabbitQueue implements Queue {
     public static final String CONSUMER_TAG = "consumer";
     private final String host;
     private final String queue;
-    private final ActorRef actor;
+    private final RabbitConsumerFactory consumerFactory;
     private Channel channel;
     private Connection connection;
 
     @Inject
-    public RabbitQueue(@Named("rabbitmq.host") String host, @Named("rabbitmq.queue") String queue, @Named("redis.actor") ActorRef actor) {
+    public RabbitQueue(@Named("rabbitmq.host") String host, @Named("rabbitmq.queue") String queue, RabbitConsumerFactory consumerFactory) {
         this.host = host;
         this.queue = queue;
-        this.actor = actor;
+        this.consumerFactory = consumerFactory;
     }
 
     public void start() {
@@ -39,8 +37,7 @@ public class RabbitQueue implements Queue {
             connection = getConnection();
             channel = connection.createChannel();
             channel.queueDeclare(queue, false, false, false, null);
-
-            channel.basicConsume(queue, false, CONSUMER_TAG, new Consumer(channel, actor));
+            channel.basicConsume(queue, false, CONSUMER_TAG, consumerFactory.create(channel));
         } catch (IOException e) {
             Logger.error("failed connecting to rabbitmq", e);
         }
